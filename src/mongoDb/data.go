@@ -5,31 +5,33 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// You will be using this Trainer type later in the program
-type Trainer struct {
-	Name string
-	Age  int
-	City string
+type UserLink struct {
+	UserId    int    `json:"user_id"`
+	UnsubLink string `json:"unsub_link"`
 }
 
-type Document struct {
-	userId    int    `json:"user_id"`
-	unsubLink string `json:"unsub_link"`
-}
-
-func Access(document Document) {
+func UserLinkAdd(ul UserLink) {
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb+srv://app-user:app-pass@email-unsubscribe-b5iub.mongodb.net/test?retryWrites=true&w=majority")
 
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 
-	ctx, _
+	// Connect to MongoDB
+	client, err := mongo.Connect(ctx, clientOptions)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Check the connection
+	err = client.Ping(ctx, nil)
 
 	if err != nil {
 		log.Fatal(err)
@@ -38,14 +40,11 @@ func Access(document Document) {
 	col := client.Database("email-unsubscribe").Collection("links")
 	fmt.Println("Collection type:", reflect.TypeOf(col))
 
-	col.InsertOne()
+	result, insertErr := col.InsertOne(ctx, ul)
 
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-
-	if err != nil {
-		log.Fatal(err)
+	if insertErr != nil {
+		fmt.Println(insertErr)
+	} else {
+		fmt.Println("UserId", result.InsertedID)
 	}
-
-	fmt.Println("Connected to MongoDB!")
 }

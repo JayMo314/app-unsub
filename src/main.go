@@ -66,27 +66,14 @@ func unsubscribe(w http.ResponseWriter, r *http.Request) {
 		go getAsync(url, ch)
 	}
 
-	// html := `<html lang="en">
-	// 		<head>
-	// 			<meta charset="UTF-8">
-	// 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	// 			<title>Unsubscribe</title>
-	// 		</head>
-	// 		<body>
-	// 		<p> All Links </p>
-	// 		<br />
-	// 			<iframe srcdoc='<html><body>` + links[0] + `</body></html>'> </iframe>
-	// 		</body>
-	// 		</html>`
-
 	for range links {
-		fmt.Fprintf(w, <-ch)
+		l := mongoDb.UserLink{UserId: 1, UnsubLink: <-ch}
+		mongoDb.UserLinkAdd(l)
 	}
-
 }
 
 func serveHtml(w http.ResponseWriter, r *http.Request) {
-	html, err := ioutil.ReadFile(".\\index.html")
+	html, err := ioutil.ReadFile(".\\html\\index.html")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -102,13 +89,7 @@ func setupRoutes() {
 }
 
 func main() {
-
-	mongoDb.Access()
-	//setupRoutes()
-	// dat, err := ioutil.ReadFile(".\\email.html")
-	// check(err)
-	// link := scan.ExtractLink(string(dat))
-	// fmt.Println(link)
+	setupRoutes()
 }
 
 func check(e error) {
